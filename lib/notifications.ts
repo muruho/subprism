@@ -1,9 +1,7 @@
-import fs from 'fs';
-import path from 'path';
 import { Resend } from 'resend';
 import { NotificationResult, Subscription } from './types';
+import { TEMPLATES } from './templates';
 
-const TEMPLATE_DIR = path.join(process.cwd(), 'template');
 const DEFAULT_LANGUAGE = 'zh-CN';
 
 export function getResendClient(): Resend | null {
@@ -22,41 +20,22 @@ export function getTelegramBotToken(): string | null {
 }
 
 /**
- * 从 template/ 目录读取指定类型的模板文件 (mail_*.html / telegram_*.md)
- * 找不到对应语种时依次回退到默认语种与目录中的任意可用模板
+ * 读取指定类型的模板 (mail_*.html / telegram_*.md)
+ * 找不到对应语种时依次回退到默认语种与任意可用模板
  */
 function readTemplate(kind: 'mail' | 'telegram', language?: string): string | null {
-  const ext = kind === 'mail' ? 'html' : 'md';
+  const templates = TEMPLATES[kind];
   const candidates = [language, DEFAULT_LANGUAGE, 'en-US', 'ja-JP'].filter(
     (v, i, arr): v is string => !!v && arr.indexOf(v) === i
   );
 
   for (const lang of candidates) {
-    const file = path.join(TEMPLATE_DIR, `${kind}_${lang}.${ext}`);
-    try {
-      if (fs.existsSync(file)) {
-        return fs.readFileSync(file, 'utf-8');
-      }
-    } catch (e) {
-      console.error(`Failed to read template ${file}:`, e);
-    }
+    const template = templates[lang];
+    if (template) return template;
   }
 
-  // 最终兜底：扫描目录中任意匹配前缀的模板
-  try {
-    if (fs.existsSync(TEMPLATE_DIR)) {
-      const match = fs
-        .readdirSync(TEMPLATE_DIR)
-        .find((f) => f.startsWith(`${kind}_`) && f.endsWith(`.${ext}`));
-      if (match) {
-        return fs.readFileSync(path.join(TEMPLATE_DIR, match), 'utf-8');
-      }
-    }
-  } catch (e) {
-    console.error('Failed to scan template directory:', e);
-  }
-
-  return null;
+  // 最终兜底：返回任意可用模板
+  return Object.values(templates)[0] ?? null;
 }
 
 /**

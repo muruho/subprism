@@ -21,18 +21,32 @@ function loadMysql(): Promise<MysqlModule> {
 }
 
 function buildPoolOptions(): PoolOptions | null {
-  const host = process.env.MYSQL_HOST;
-  const user = process.env.MYSQL_USER;
-  const password = process.env.MYSQL_PASSWORD;
-  const database = process.env.MYSQL_DATABASE;
+  let host: string | undefined;
+  let port: string | undefined;
+  let user: string | undefined;
+  let password: string | undefined;
+  let database: string | undefined;
 
-  if (!host || !user || !database) {
+  if (process.env.MYSQL_HOST && process.env.MYSQL_USER && process.env.MYSQL_DATABASE) {
+    host = process.env.MYSQL_HOST;
+    port = process.env.MYSQL_PORT;
+    user = process.env.MYSQL_USER;
+    password = process.env.MYSQL_PASSWORD;
+    database = process.env.MYSQL_DATABASE;
+  } else if (process.env.DB_HOST && process.env.DB_USERNAME && process.env.DB_NAME) {
+    // Wasmer Edge 托管数据库注入的变量；托管实例非标准端口，必须读取 DB_PORT
+    host = process.env.DB_HOST;
+    port = process.env.DB_PORT;
+    user = process.env.DB_USERNAME;
+    password = process.env.DB_PASSWORD;
+    database = process.env.DB_NAME;
+  } else {
     return null;
   }
 
   return {
     host,
-    port: parseInt(process.env.MYSQL_PORT || '3306', 10),
+    port: parseInt(port || '3306', 10),
     user,
     password,
     database,
@@ -73,7 +87,8 @@ export function isDbConfigured(): boolean {
   return !!(
     process.env.MYSQL_URL ||
     process.env.DATABASE_URL ||
-    (process.env.MYSQL_HOST && process.env.MYSQL_USER && process.env.MYSQL_DATABASE)
+    (process.env.MYSQL_HOST && process.env.MYSQL_USER && process.env.MYSQL_DATABASE) ||
+    (process.env.DB_HOST && process.env.DB_USERNAME && process.env.DB_NAME)
   );
 }
 
@@ -141,7 +156,9 @@ export async function ensureSchema(): Promise<void> {
 
   const pool = await getPool();
   if (!pool) {
-    throw new Error('MySQL 未配置：请设置 MYSQL_URL 或 MYSQL_HOST/MYSQL_USER/MYSQL_DATABASE');
+    throw new Error(
+      'MySQL 未配置：请设置 MYSQL_URL、MYSQL_HOST/MYSQL_USER/MYSQL_DATABASE，或使用 Wasmer 托管库注入的 DB_*'
+    );
   }
 
   if (!globalDb.__subMgrSchemaReady) {
@@ -161,7 +178,9 @@ export async function ensureSchema(): Promise<void> {
 async function withPool<T>(fn: (pool: Pool) => Promise<T>): Promise<T> {
   const pool = await getPool();
   if (!pool) {
-    throw new Error('MySQL 未配置：请设置 MYSQL_URL 或 MYSQL_HOST/MYSQL_USER/MYSQL_DATABASE');
+    throw new Error(
+      'MySQL 未配置：请设置 MYSQL_URL、MYSQL_HOST/MYSQL_USER/MYSQL_DATABASE，或使用 Wasmer 托管库注入的 DB_*'
+    );
   }
   return fn(pool);
 }
