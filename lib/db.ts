@@ -77,6 +77,14 @@ export function isDbConfigured(): boolean {
   );
 }
 
+/**
+ * 是否运行在边缘函数环境（IS_EDGE=true，默认 false）。
+ * 边缘环境下数据库与数据表由平台预先创建，跳过建表等初始化操作，直接进行增删改查。
+ */
+export function isEdgeFunction(): boolean {
+  return process.env.IS_EDGE === 'true';
+}
+
 const SCHEMA_STATEMENTS = [
   `CREATE TABLE IF NOT EXISTS proxy_nodes (
     id VARCHAR(64) NOT NULL PRIMARY KEY,
@@ -128,6 +136,9 @@ const SCHEMA_STATEMENTS = [
 ];
 
 export async function ensureSchema(): Promise<void> {
+  // 边缘函数环境：表结构由平台预置，跳过建表等初始化，直接增删改查
+  if (isEdgeFunction()) return;
+
   const pool = await getPool();
   if (!pool) {
     throw new Error('MySQL 未配置：请设置 MYSQL_URL 或 MYSQL_HOST/MYSQL_USER/MYSQL_DATABASE');
