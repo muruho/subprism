@@ -1,5 +1,10 @@
+import fs from 'fs';
+import path from 'path';
 import { Resend } from 'resend';
 import { NotificationResult, Subscription } from './types';
+
+const TEMPLATE_DIR = path.join(process.cwd(), 'template');
+const DEFAULT_LANGUAGE = 'zh-CN';
 
 export function getResendClient(): Resend | null {
   const apiKey = process.env.RESEND_API_KEY;
@@ -17,7 +22,60 @@ export function getTelegramBotToken(): string | null {
 }
 
 /**
- * 发送 Resend 邮件通知
+ * 从 template/ 目录读取指定类型的模板文件 (mail_*.html / telegram_*.md)
+ * 找不到对应语种时依次回退到默认语种与目录中的任意可用模板
+ */
+function readTemplate(kind: 'mail' | 'telegram', language?: string): string | null {
+  const ext = kind === 'mail' ? 'html' : 'md';
+  const candidates = [language, DEFAULT_LANGUAGE, 'en-US', 'ja-JP'].filter(
+    (v, i, arr): v is string => !!v && arr.indexOf(v) === i
+  );
+
+  for (const lang of candidates) {
+    const file = path.join(TEMPLATE_DIR, `${kind}_${lang}.${ext}`);
+    try {
+      if (fs.existsSync(file)) {
+        return fs.readFileSync(file, 'utf-8');
+      }
+    } catch (e) {
+      console.error(`Failed to read template ${file}:`, e);
+    }
+  }
+
+  // 最终兜底：扫描目录中任意匹配前缀的模板
+  try {
+    if (fs.existsSync(TEMPLATE_DIR)) {
+      const match = fs
+        .readdirSync(TEMPLATE_DIR)
+        .find((f) => f.startsWith(`${kind}_`) && f.endsWith(`.${ext}`));
+      if (match) {
+        return fs.readFileSync(path.join(TEMPLATE_DIR, match), 'utf-8');
+      }
+    }
+  } catch (e) {
+    console.error('Failed to scan template directory:', e);
+  }
+
+  return null;
+}
+
+/**
+ * 将 {{key}} 占位符替换为变量值
+ */
+function renderTemplate(template: string, vars: Record<string, string | number>): string {
+  return template.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_m, key) => {
+    const value = vars[key];
+    return value === undefined || value === null ? '' : String(value);
+  });
+}
+
+function extractTitle(html: string): string | null {
+  const match = html.match(/<title>([\s\S]*?)<\/title>/i);
+  return match ? match[1].trim() : null;
+}
+
+/**
+ * 发送 Resend 邮件通知（模板来自 template/mail_<lang>.html）
  */
 export async function sendEmailNotification({
   to,
@@ -26,6 +84,7 @@ export async function sendEmailNotification({
   clashUrl,
   v2rayUrl,
   nodeCount,
+  language,
 }: {
   to: string;
   username: string;
@@ -33,6 +92,7 @@ export async function sendEmailNotification({
   clashUrl: string;
   v2rayUrl: string;
   nodeCount: number;
+  language?: string;
 }): Promise<{ success: boolean; error?: string }> {
   const resend = getResendClient();
   if (!resend) {
@@ -41,69 +101,27 @@ export async function sendEmailNotification({
 
   const fromEmail = process.env.RESEND_FROM_EMAIL || 'SubPrism <onboarding@resend.dev>';
 
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f8; margin: 0; padding: 20px; color: #333; }
-        .card { background-color: #ffffff; border-radius: 12px; max-width: 600px; margin: 20px auto; padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
-        .header { text-align: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; }
-        .title { color: #111827; font-size: 24px; font-weight: 700; margin: 0; }
-        .badge { display: inline-block; background: #e0e7ff; color: #4338ca; padding: 4px 12px; border-radius: 9999px; font-size: 13px; font-weight: 600; margin-top: 8px; }
-        .content { margin-top: 24px; line-height: 1.6; }
-        .link-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; margin-bottom: 16px; word-break: break-all; }
-        .link-title { font-weight: 600; font-size: 14px; color: #374151; margin-bottom: 4px; display: flex; align-items: center; }
-        .link-url { font-family: monospace; font-size: 13px; color: #2563eb; text-decoration: none; }
-        .footer { text-align: center; margin-top: 32px; font-size: 12px; color: #9ca3af; }
-        .btn { display: inline-block; background: #2563eb; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 500; font-size: 14px; margin-top: 8px; }
-      </style>
-    </head>
-    <body>
-      <div class="card">
-        <div class="header">
-          <h1 class="title">🚀 专属订阅链接已更新</h1>
-          <div class="badge">用户: ${username} | 可用节点: ${nodeCount} 个</div>
-        </div>
-        <div class="content">
-          <p>您好 <strong>${username}</strong>，您的专属代理订阅链接已准备完毕，请根据您使用的客户端选择下方对应的订阅格式：</p>
-          
-          <div class="link-box">
-            <div class="link-title">🔗 通用订阅 (Universal / V2RayN / Shadowrocket)</div>
-            <a class="link-url" href="${subUrl}">${subUrl}</a>
-          </div>
+  const template = readTemplate('mail', language);
+  if (!template) {
+    return { success: false, error: `未找到邮件模板 (template/mail_${language || DEFAULT_LANGUAGE}.html)` };
+  }
 
-          <div class="link-box">
-            <div class="link-title">⚡ Clash / Meta 订阅</div>
-            <a class="link-url" href="${clashUrl}">${clashUrl}</a>
-            <div style="margin-top: 8px;">
-              <a class="btn" href="clash://install-config?url=${encodeURIComponent(clashUrl)}">一键导入 Clash</a>
-            </div>
-          </div>
+  const htmlContent = renderTemplate(template, {
+    username,
+    nodeCount,
+    subUrl,
+    clashUrl,
+    v2rayUrl,
+  });
 
-          <div class="link-box">
-            <div class="link-title">🛡️ V2Ray 格式订阅</div>
-            <a class="link-url" href="${v2rayUrl}">${v2rayUrl}</a>
-          </div>
-
-          <p style="font-size: 13px; color: #6b7280; margin-top: 20px;">
-            提示：请妥善保管您的专属订阅链接，不要向公众传播以保证节点质量与安全。
-          </p>
-        </div>
-        <div class="footer">
-          由 SubPrism 订阅系统自动发送 · 感谢您的使用
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
+  const subject =
+    extractTitle(htmlContent) || `[SubPrism] Subscription (${username})`;
 
   try {
     const data = await resend.emails.send({
       from: fromEmail,
       to: [to],
-      subject: `[SubPrism] 您的专属代理订阅配置 (${username})`,
+      subject,
       html: htmlContent,
     });
 
@@ -117,7 +135,7 @@ export async function sendEmailNotification({
 }
 
 /**
- * 发送 Telegram 机器人通知
+ * 发送 Telegram 机器人通知（模板来自 template/telegram_<lang>.md）
  */
 export async function sendTelegramNotification({
   chatId,
@@ -126,6 +144,7 @@ export async function sendTelegramNotification({
   clashUrl,
   v2rayUrl,
   nodeCount,
+  language,
 }: {
   chatId: string;
   username: string;
@@ -133,27 +152,28 @@ export async function sendTelegramNotification({
   clashUrl: string;
   v2rayUrl: string;
   nodeCount: number;
+  language?: string;
 }): Promise<{ success: boolean; error?: string }> {
   const token = getTelegramBotToken();
   if (!token) {
     return { success: false, error: 'TELEGRAM_BOT_TOKEN 未配置' };
   }
 
-  const text = `🎉 *专属订阅链接通知*
+  const template = readTemplate('telegram', language);
+  if (!template) {
+    return {
+      success: false,
+      error: `未找到 Telegram 模板 (template/telegram_${language || DEFAULT_LANGUAGE}.md)`,
+    };
+  }
 
-👤 *用户*: \`${username}\`
-🌐 *节点数*: ${nodeCount} 个
-
-🔗 *通用订阅链接*:
-\`${subUrl}\`
-
-⚡ *Clash 专用订阅*:
-\`${clashUrl}\`
-
-🛡️ *V2Ray 专用订阅*:
-\`${v2rayUrl}\`
-
-👉 _请复制上方订阅链接到对应客户端中更新配置。_`;
+  const text = renderTemplate(template, {
+    username,
+    nodeCount,
+    subUrl,
+    clashUrl,
+    v2rayUrl,
+  }).trim();
 
   try {
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
@@ -180,7 +200,7 @@ export async function sendTelegramNotification({
 }
 
 /**
- * 针对某个订阅分发通知 (Email + Telegram)
+ * 针对某个订阅分发通知 (Email + Telegram)，按订阅语言读取对应模板
  */
 export async function dispatchSubscriptionNotification(
   sub: Subscription,
@@ -188,6 +208,7 @@ export async function dispatchSubscriptionNotification(
   baseUrl: string
 ): Promise<NotificationResult> {
   const result: NotificationResult = {};
+  const language = sub.language || DEFAULT_LANGUAGE;
 
   const subUrl = `${baseUrl}/sub/${sub.token}`;
   const clashUrl = `${baseUrl}/sub/${sub.token}?format=clash`;
@@ -202,6 +223,7 @@ export async function dispatchSubscriptionNotification(
       clashUrl,
       v2rayUrl,
       nodeCount,
+      language,
     });
     result.emailSent = emailRes.success;
     if (!emailRes.success) {
@@ -218,6 +240,7 @@ export async function dispatchSubscriptionNotification(
       clashUrl,
       v2rayUrl,
       nodeCount,
+      language,
     });
     result.telegramSent = tgRes.success;
     if (!tgRes.success) {

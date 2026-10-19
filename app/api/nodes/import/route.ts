@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { parseBatchUrls, parseProxyUrl } from '@/lib/parser';
-import { saveNodesBatch } from '@/lib/redis';
+import { saveNodesBatch } from '@/lib/db';
 import { getAdminSessionFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';

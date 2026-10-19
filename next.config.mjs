@@ -3,6 +3,10 @@ const nextConfig = {
   reactStrictMode: true,
   experimental: {
     instrumentationHook: true,
+    outputFileTracingIncludes: {
+      '/api/**/*': ['./template/**/*', './locales/**/*'],
+      '/sub/**/*': ['./template/**/*', './locales/**/*'],
+    },
   },
 };
 

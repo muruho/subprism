@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>[SubPrism] お客様専用プロキシ サブスクリプション設定 ({{username}})</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, 'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, sans-serif; background-color: #f4f6f8; margin: 0; padding: 20px; color: #333; }
+    .card { background-color: #ffffff; border-radius: 12px; max-width: 600px; margin: 20px auto; padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+    .header { text-align: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; }
+    .title { color: #111827; font-size: 24px; font-weight: 700; margin: 0; }
+    .badge { display: inline-block; background: #e0e7ff; color: #4338ca; padding: 4px 12px; border-radius: 9999px; font-size: 13px; font-weight: 600; margin-top: 8px; }
+    .content { margin-top: 24px; line-height: 1.6; }
+    .link-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; margin-bottom: 16px; word-break: break-all; }
+    .link-title { font-weight: 600; font-size: 14px; color: #374151; margin-bottom: 4px; }
+    .link-url { font-family: monospace; font-size: 13px; color: #2563eb; text-decoration: none; }
+    .notice { background: #fff7ed; border-left: 4px solid #f97316; border-radius: 6px; padding: 12px 14px; margin: 20px 0; font-size: 14px; }
+    .notice strong { color: #c2410c; }
+    .section-title { font-size: 18px; color: #1d4ed8; font-weight: 700; margin: 32px 0 12px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+    .steps { padding-left: 22px; margin: 0; font-size: 14px; }
+    .steps li { margin-bottom: 6px; }
+    .tip { background: #eff6ff; border-radius: 6px; padding: 12px 14px; margin: 14px 0; font-size: 14px; }
+    .faq p { margin: 8px 0; font-size: 14px; }
+    .footer { text-align: center; margin-top: 32px; font-size: 12px; color: #9ca3af; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1 class="title">専用サブスクリプションリンクが更新されました</h1>
+      <div class="badge">ユーザー: {{username}} | 利用可能ノード: {{nodeCount}} 件</div>
+    </div>
+    <div class="content">
+      <p>こんにちは <strong>{{username}}</strong> 様。お客様専用のプロキシ サブスクリプションリンクの準備が整いました。ご利用のクライアントに合わせて、以下の形式をお選びください:</p>
+
+      <div class="link-box">
+        <div class="link-title">🔗 汎用サブスクリプション (Universal / V2RayN / Shadowrocket)</div>
+        <a class="link-url" href="{{subUrl}}">{{subUrl}}</a>
+      </div>
+
+      <div class="link-box">
+        <div class="link-title">⚡ Clash / Meta サブスクリプション</div>
+        <a class="link-url" href="{{clashUrl}}">{{clashUrl}}</a>
+      </div>
+
+      <div class="link-box">
+        <div class="link-title">🛡️ V2Ray 形式サブスクリプション</div>
+        <a class="link-url" href="{{v2rayUrl}}">{{v2rayUrl}}</a>
+      </div>
+
+      <div class="notice">
+        <strong>重要:</strong>サブスクリプションリンクにはアカウントおよびノードの情報が含まれています。公開したり、グループチャットやフォーラムなどに投稿したりしないでください。
+      </div>
+
+      <h2 class="section-title">一、v2rayN でサブスクリプションをインポート</h2>
+      <ol class="steps">
+        <li>パソコンで <strong>v2rayN</strong> を開きます。</li>
+        <li>上部メニューの <strong>サブスクリプショングループ</strong> をクリックします。</li>
+        <li><strong>サブスクリプショングループの設定</strong> を選択します。</li>
+        <li>ウィンドウ左上の <strong>追加</strong> をクリックします。</li>
+        <li>「別名」または「メモ」に名前を入力します。例: <strong>マイサブスクリプション</strong></li>
+        <li>「URL」欄に、上記の<strong>汎用サブスクリプション</strong>リンクを貼り付けます。</li>
+        <li>ユーザーエージェント (User-Agent) に Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html) を入力します。</li>
+        <li><strong>OK</strong> をクリックして保存します。</li>
+        <li>メイン画面に戻り、<strong>サブスクリプショングループ</strong> をクリックします。</li>
+        <li><strong>すべてのサブスクリプションを更新</strong> を選択し、ノードの読み込みが完了するまで待ちます。</li>
+        <li>ノード一覧から使用したいノードを選択し、アクティブサーバーに設定します。</li>
+      </ol>
+      <div class="tip">
+        <strong>ヒント:</strong>ノードを選択したら、右下のトレイ領域にある v2rayN アイコンを右クリックし、<strong>システムプロキシを自動設定</strong> を選択してください。
+      </div>
+
+      <h2 class="section-title">二、Shadowrocket(シャドウロケット)でサブスクリプションをインポート</h2>
+      <ol class="steps">
+        <li>iPhone または iPad で <strong>Shadowrocket(シャドウロケット)</strong> を開きます。</li>
+        <li>ホーム画面右上の <strong>+</strong> ボタンをタップします。</li>
+        <li>「タイプ」をタップし、<strong>Subscribe</strong> を選択します。</li>
+        <li>「URL」欄に、上記の<strong>汎用サブスクリプション</strong>リンクを貼り付けます。</li>
+        <li>「メモ」欄に、分かりやすい名前を入力します。例: <strong>マイサブスクリプション</strong></li>
+        <li>ユーザーエージェント (User-Agent) に Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html) を入力します。</li>
+        <li>右上の <strong>完了</strong> をタップして保存します。</li>
+        <li>ホーム画面に戻り、ノードが自動で読み込まれるのを待ちます。</li>
+        <li>ノードを選択し、右上のスイッチをオンにして接続を開始します。</li>
+        <li>VPN 構成の追加を求められた場合は、「許可」をタップし、表示に従って認証を完了してください。</li>
+      </ol>
+      <div class="tip">
+        <strong>おすすめ:</strong>接続する前に「接続テスト」を実行し、テストに合格し遅延が少ないノードを選ぶと安心です。「グローバルルーティング」は通常 <strong>設定</strong> を選択して問題ありません。
+      </div>
+
+      <h2 class="section-title">三、Clash / Meta でサブスクリプションをインポート</h2>
+      <ol class="steps">
+        <li>パソコンで <strong>Clash Verge</strong>(または他の Clash / Meta クライアント)を開きます。</li>
+        <li>左側のメニューから <strong>プロファイル</strong> ページを開きます。</li>
+        <li>上記の <strong>Clash / Meta サブスクリプション</strong> リンクを入力欄に貼り付けます。</li>
+        <li>ユーザーエージェント (User-Agent) に Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html) を入力します。</li>
+        <li><strong>インポート</strong> をクリックし、設定のダウンロードが完了するまで待ちます。</li>
+        <li>一覧から、新しくインポートしたプロファイルを選択します。</li>
+        <li><strong>プロキシ</strong> ページでノードを選択し、<strong>システムプロキシ</strong> をオンにします。</li>
+      </ol>
+      <div class="tip">
+        <strong>ヒント:</strong>すべてのアプリの通信を経由させたい場合は <strong>Tun モード</strong> を有効にできます。サブスクリプションの更新は、一覧の更新ボタンから手動で行えます。
+      </div>
+
+      <h2 class="section-title">四、よくある質問</h2>
+      <div class="faq">
+        <p><strong>1. インポート後にノードが表示されません。どうすればよいですか?</strong><br>
+        サブスクリプションリンクが完全にコピーされているか、余分なスペースが入っていないかを確認し、手動でサブスクリプションを更新してみてください。</p>
+
+        <p><strong>2. ノードに timeout と表示されます。どうすればよいですか?</strong><br>
+        まずサブスクリプションを更新し、別のノードで試してください。あわせて、ネットワークが正常に動作しているかご確認ください。それでも接続できない場合は、管理者にサブスクリプションの更新または無効なノードの対応をご依頼ください。</p>
+
+        <p><strong>3. サブスクリプションの更新は必要ですか?</strong><br>
+        ノード情報は変更される場合があるため、定期的な更新をおすすめします。Shadowrocket では「起動時に更新」を有効にでき、v2rayN では「サブスクリプショングループ」から手動で更新できます。</p>
+
+        <p>操作中に問題が発生した場合は、表示されたメッセージを画像(スクリーンショット)で送信していただければ、さらに調査いたします。</p>
+      </div>
+
+    </div>
+    <div class="footer">
+      SubPrism サブスクリプションシステムより自動送信されています · ご利用いただきありがとうございます
+    </div>
+  </div>
+</body>
+</html>

@@ -31,6 +31,7 @@ export interface Subscription {
   username: string; // 必填 用户名
   email?: string; // 可选 邮箱
   telegramChatId?: string; // 可选 Telegram Chat ID
+  language: string; // 通知模板语言 (必填, 默认跟随界面语言)
   enableNotification: boolean; // 是否开启通知
   remark?: string; // 备注
   nodeScope: 'all' | 'custom'; // 全部节点 或 指定节点
@@ -49,7 +50,7 @@ export interface SystemStats {
   totalSubs: number;
   activeSubs: number;
   totalFetches: number;
-  redisConnected: boolean;
+  dbConnected: boolean;
   resendConfigured: boolean;
   telegramConfigured: boolean;
 }

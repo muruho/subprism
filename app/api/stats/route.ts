@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSystemStats } from '@/lib/redis';
+import { getSystemStats } from '@/lib/db';
 import { getAdminSessionFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';

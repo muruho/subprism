@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>[SubPrism] Your Personal Proxy Subscription ({{username}})</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f8; margin: 0; padding: 20px; color: #333; }
+    .card { background-color: #ffffff; border-radius: 12px; max-width: 600px; margin: 20px auto; padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+    .header { text-align: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; }
+    .title { color: #111827; font-size: 24px; font-weight: 700; margin: 0; }
+    .badge { display: inline-block; background: #e0e7ff; color: #4338ca; padding: 4px 12px; border-radius: 9999px; font-size: 13px; font-weight: 600; margin-top: 8px; }
+    .content { margin-top: 24px; line-height: 1.6; }
+    .link-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; margin-bottom: 16px; word-break: break-all; }
+    .link-title { font-weight: 600; font-size: 14px; color: #374151; margin-bottom: 4px; }
+    .link-url { font-family: monospace; font-size: 13px; color: #2563eb; text-decoration: none; }
+    .notice { background: #fff7ed; border-left: 4px solid #f97316; border-radius: 6px; padding: 12px 14px; margin: 20px 0; font-size: 14px; }
+    .notice strong { color: #c2410c; }
+    .section-title { font-size: 18px; color: #1d4ed8; font-weight: 700; margin: 32px 0 12px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+    .steps { padding-left: 22px; margin: 0; font-size: 14px; }
+    .steps li { margin-bottom: 6px; }
+    .tip { background: #eff6ff; border-radius: 6px; padding: 12px 14px; margin: 14px 0; font-size: 14px; }
+    .faq p { margin: 8px 0; font-size: 14px; }
+    .footer { text-align: center; margin-top: 32px; font-size: 12px; color: #9ca3af; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1 class="title">Your Subscription Link Is Ready</h1>
+      <div class="badge">User: {{username}} | Available nodes: {{nodeCount}}</div>
+    </div>
+    <div class="content">
+      <p>Hello <strong>{{username}}</strong>, your personal proxy subscription links are ready. Please choose the format that matches your client below:</p>
+
+      <div class="link-box">
+        <div class="link-title">🔗 Universal Subscription (Universal / V2RayN / Shadowrocket)</div>
+        <a class="link-url" href="{{subUrl}}">{{subUrl}}</a>
+      </div>
+
+      <div class="link-box">
+        <div class="link-title">⚡ Clash / Meta Subscription</div>
+        <a class="link-url" href="{{clashUrl}}">{{clashUrl}}</a>
+      </div>
+
+      <div class="link-box">
+        <div class="link-title">🛡️ V2Ray Subscription</div>
+        <a class="link-url" href="{{v2rayUrl}}">{{v2rayUrl}}</a>
+      </div>
+
+      <div class="notice">
+        <strong>Important:</strong> Your subscription link contains your account and node information. Do not share it publicly or post it in group chats or forums.
+      </div>
+
+      <h2 class="section-title">1. Import the Subscription in v2rayN (Windows)</h2>
+      <ol class="steps">
+        <li>Open <strong>v2rayN</strong> on your computer.</li>
+        <li>Click <strong>Subscription group</strong> in the top menu.</li>
+        <li>Select <strong>Subscription group settings</strong>.</li>
+        <li>Click <strong>Add</strong> in the top-left corner of the window.</li>
+        <li>Enter a name in the "Alias" or "Remarks" field, for example: <strong>My Subscription</strong>.</li>
+        <li>Paste the <strong>Universal subscription</strong> link above into the "URL" field.</li>
+        <li>Set the User-Agent to Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)</li>
+        <li>Click <strong>OK</strong> to save.</li>
+        <li>Return to the main window and click <strong>Subscription group</strong>.</li>
+        <li>Select <strong>Update all subscriptions</strong> and wait for the nodes to load.</li>
+        <li>Choose the node you want to use and set it as the active server.</li>
+      </ol>
+      <div class="tip">
+        <strong>Tip:</strong> After selecting a node, right-click the v2rayN icon in the system tray (bottom-right corner) and choose <strong>Set system proxy automatically</strong>.
+      </div>
+
+      <h2 class="section-title">2. Import the Subscription in Shadowrocket (iPhone / iPad)</h2>
+      <ol class="steps">
+        <li>Open <strong>Shadowrocket</strong> on your iPhone or iPad.</li>
+        <li>Tap the <strong>+</strong> button in the top-right corner of the home screen.</li>
+        <li>Tap "Type" and select <strong>Subscribe</strong>.</li>
+        <li>Paste the <strong>Universal subscription</strong> link above into the "URL" field.</li>
+        <li>Enter a recognizable name in the "Remarks" field, for example: <strong>My Subscription</strong>.</li>
+        <li>Set the User-Agent to Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)</li>
+        <li>Tap <strong>Done</strong> in the top-right corner to save.</li>
+        <li>Return to the home screen and wait for the nodes to load automatically.</li>
+        <li>Select a node and turn on the switch in the top-right corner to connect.</li>
+        <li>If the system asks you to add a VPN configuration, tap Allow and complete the verification as prompted.</li>
+      </ol>
+      <div class="tip">
+        <strong>Recommendation:</strong> Before connecting, run "Connectivity Test" and choose a node that passes with low latency. For "Global Routing", you can usually select <strong>Config</strong>.
+      </div>
+
+      <h2 class="section-title">3. Import the Subscription in Clash / Meta</h2>
+      <ol class="steps">
+        <li>Open <strong>Clash Verge</strong> (or another Clash / Meta client) on your computer.</li>
+        <li>Go to the <strong>Profiles</strong> page from the left menu.</li>
+        <li>Paste the <strong>Clash / Meta subscription</strong> link above into the input box.</li>
+        <li>Set the User-Agent to Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)</li>
+        <li>Click <strong>Import</strong> and wait for the configuration to download.</li>
+        <li>Select the newly imported profile in the list.</li>
+        <li>Go to the <strong>Proxies</strong> page, choose a node, and turn on <strong>System Proxy</strong>.</li>
+      </ol>
+      <div class="tip">
+        <strong>Tip:</strong> To route traffic from all applications, you can enable <strong>TUN mode</strong>. To update the subscription, click the update button for the profile in the list.
+      </div>
+
+      <h2 class="section-title">4. FAQ</h2>
+      <div class="faq">
+        <p><strong>1. No nodes appear after importing. What should I do?</strong><br>
+        Make sure the subscription link was copied completely with no extra spaces, then try updating the subscription manually.</p>
+
+        <p><strong>2. A node shows "timeout". What should I do?</strong><br>
+        Update the subscription first, then try a different node. Also confirm that your network is working. If you still cannot connect, please contact the administrator to update the subscription or handle invalid nodes.</p>
+
+        <p><strong>3. Do I need to update the subscription regularly?</strong><br>
+        Node information may change, so it is recommended to update your subscription regularly. Shadowrocket can be set to "Update on open", and v2rayN lets you update manually under "Subscription group".</p>
+
+        <p>If you run into any problems, please send us a screenshot of the exact message so we can investigate further.</p>
+      </div>
+
+    </div>
+    <div class="footer">
+      Automatically sent by the SubPrism subscription system · Thank you for using our service
+    </div>
+  </div>
+</body>
+</html>

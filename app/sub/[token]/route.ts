@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSubscriptionByToken, getAllNodes, recordSubFetch } from '@/lib/redis';
+import { getSubscriptionByToken, getAllNodes, recordSubFetch } from '@/lib/db';
 import { nodeToRawUrl, safeBase64Encode } from '@/lib/parser';
 import { generateClashConfig } from '@/lib/clash';
 import { ProxyNode } from '@/lib/types';

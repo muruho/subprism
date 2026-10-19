@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getNodeById, saveNode, deleteNode } from '@/lib/redis';
+import { getNodeById, saveNode, deleteNode } from '@/lib/db';
 import { getAdminSessionFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';

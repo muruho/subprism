@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSubscriptionById, saveSubscription, deleteSubscription } from '@/lib/redis';
+import { getSubscriptionById, saveSubscription, deleteSubscription } from '@/lib/db';
 import { getAdminSessionFromRequest } from '@/lib/auth';
 import { generateSubToken } from '@/lib/token';
 
@@ -39,6 +39,10 @@ export async function PUT(
         body.telegramChatId !== undefined
           ? body.telegramChatId.trim() || undefined
           : existing.telegramChatId,
+      language:
+        body.language !== undefined
+          ? body.language.trim() || existing.language || 'zh-CN'
+          : existing.language || 'zh-CN',
       remark: body.remark !== undefined ? body.remark.trim() || undefined : existing.remark,
       nodeScope: body.nodeScope === 'custom' ? 'custom' : 'all',
       nodeIds: Array.isArray(body.nodeIds) ? body.nodeIds : existing.nodeIds,

@@ -26,7 +26,7 @@ import { getQRCodeUrl } from '@/lib/qrcode';
 import { useI18n } from '@/components/I18nProvider';
 
 export default function SubscriptionsPage() {
-  const { t } = useI18n();
+  const { t, locale, availableLocales } = useI18n();
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [nodes, setNodes] = useState<ProxyNode[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,6 +79,10 @@ export default function SubscriptionsPage() {
     e.preventDefault();
     if (!editingSub || !editingSub.username?.trim()) {
       alert(t('subs.fieldUsername') + ' ' + t('common.required'));
+      return;
+    }
+    if (!editingSub.language?.trim()) {
+      alert(t('subs.fieldLanguage') + ' ' + t('common.required'));
       return;
     }
 
@@ -225,6 +229,7 @@ export default function SubscriptionsPage() {
               username: '',
               email: '',
               telegramChatId: '',
+              language: locale,
               enableNotification: true,
               remark: '',
               nodeScope: 'all',
@@ -770,6 +775,28 @@ export default function SubscriptionsPage() {
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  {t('subs.fieldLanguage')} *
+                </label>
+                <select
+                  required
+                  value={editingSub.language || locale}
+                  onChange={(e) => setEditingSub({ ...editingSub, language: e.target.value })}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {availableLocales.map((l) => (
+                    <option key={l.code} value={l.code}>
+                      {l.flag ? `${l.flag} ` : ''}
+                      {l.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  {t('subs.languageTip')}
+                </p>
               </div>
 
               <div>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllSubscriptions, saveSubscription, getAllNodes } from '@/lib/redis';
+import { getAllSubscriptions, saveSubscription, getAllNodes } from '@/lib/db';
 import { getAdminSessionFromRequest } from '@/lib/auth';
 import { generateSubToken } from '@/lib/token';
 import { dispatchSubscriptionNotification } from '@/lib/notifications';
@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
       username,
       email: body.email?.trim() || undefined,
       telegramChatId: body.telegramChatId?.trim() || undefined,
+      language: body.language?.trim() || 'zh-CN',
       enableNotification: !!body.enableNotification,
       remark: body.remark?.trim() || undefined,
       nodeScope: body.nodeScope === 'custom' ? 'custom' : 'all',
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
           : sub.nodeIds.length;
 
       const origin =
-        process.env.NEXT_PUBLIC_APP_URL ||
+        process.env.APP_URL ||
         `${req.nextUrl.protocol}//${req.nextUrl.host}`;
 
       dispatchSubscriptionNotification(sub, nodeCount, origin).catch((e) =>

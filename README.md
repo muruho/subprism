@@ -4,10 +4,10 @@
 
 **现代化高性能代理节点与多协议订阅分发中枢** / Modern, high-performance proxy node management and multi-protocol subscription distribution hub
 
-基于 Next.js 14 (App Router) + pnpm + Upstash Redis 构建 / Built with Next.js 14 (App Router) + pnpm + Upstash Redis
+基于 Next.js 14 (App Router) + pnpm + MySQL 构建 / Built with Next.js 14 (App Router) + pnpm + MySQL
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black.svg)](https://nextjs.org/)
-[![Upstash Redis](https://img.shields.io/badge/Upstash-Redis-00E599.svg)](https://upstash.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-8-4479A1.svg)](https://www.mysql.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC.svg)](https://tailwindcss.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -40,14 +40,15 @@
   - 自动识别客户端 User-Agent 智能协商输出格式。
 - 📱 **二维码极速扫码**
   - 订阅弹窗集成动态二维码生成，一键切换各客户端格式，方便移动端扫码导入。
-- 📬 **自动与手动通知系统**
-  - **Resend 邮件推送**：发送美观的 HTML 响应式卡片邮件。
-  - **Telegram 机器人推送**：发送 Markdown 格式专属订阅卡片。
+- 📬 **自动与手动通知系统（模板化 + 多语言）**
+  - **Resend 邮件推送**：从 `template/mail_<lang>.html` 读取 HTML 响应式卡片邮件模板。
+  - **Telegram 机器人推送**：从 `template/telegram_<lang>.md` 读取 Markdown 订阅卡片模板。
+  - 每个订阅可单独配置**通知语言**（默认跟随当前界面语言），发送时按语言匹配对应模板，使用 `{{变量}}` 占位符动态替换。
 - 🌍 **多语言国际化 (i18n)**
   - 支持简体中文（默认）、English、日本語，详见[国际化指南](#国际化指南)。
 - 🛡️ **生产级安全防护**
   - 无默认弱密码，未配置密码时启动自动生成 16 位随机密码并打印日志。
-  - 敏感凭据（Redis、Token、API Key）严格位于服务端，绝不暴露至前端。
+  - 敏感凭据（MySQL、Token、API Key）严格位于服务端，绝不暴露至前端。
   - 严格的 JWT Cookie 鉴权与中间件路由拦截。
 
 ### 技术栈
@@ -56,7 +57,7 @@
 | --- | --- |
 | 框架 | Next.js 14 (App Router) + React 18 + TypeScript 5.6 |
 | 样式 | Tailwind CSS 3 + clsx + tailwind-merge + lucide-react |
-| 数据存储 | Upstash Redis（无 Redis 环境变量时自动降级为内存模式） |
+| 数据存储 | MySQL（基于 mysql2 连接池，启动时自动建表） |
 | 认证 | JWT Cookie 会话 + 中间件路由拦截 |
 | 通知 | Resend (Email) + Telegram Bot |
 
@@ -75,9 +76,14 @@ AUTH_SECRET=your_secret_jwt_key
 # 订阅 16 位 Token 生成密钥盐值（强烈建议自定义）
 SUB_TOKEN=your_custom_secret_salt
 
-# Upstash Redis 数据库凭据（未配置时自动开启本地内存降级模式）
-UPSTASH_REDIS_REST_URL=https://your-database.upstash.io
-UPSTASH_REDIS_REST_TOKEN=Axxxxxx...
+# MySQL 数据库连接串（推荐，启动时自动建表）
+MYSQL_URL=mysql://user:password@localhost:3306/subprism
+# 或者使用以下独立字段（当 MYSQL_URL 为空时生效）
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=your_password
+MYSQL_DATABASE=subprism
 
 # 邮件通知服务（Resend）
 RESEND_API_KEY=re_xxxxxxxxxxxx
@@ -87,7 +93,7 @@ RESEND_FROM_EMAIL=SubPrism <notifications@resend.dev>
 TELEGRAM_BOT_TOKEN=123456789:ABCDefgh-xxxxxxxx
 
 # 应用公网部署域名（用于生成订阅链接）
-NEXT_PUBLIC_APP_URL=https://your-domain.vercel.app
+APP_URL=https://your-domain.vercel.app
 ```
 
 ### 部署指南
@@ -114,7 +120,7 @@ pnpm lint        # 代码检查
 3. 点击 **Deploy** 完成部署。
 4. 部署后访问 `/admin`，使用配置的管理员凭据登录。
 
-> 💡 **无服务器提示**：未配置 `UPSTASH_REDIS_REST_URL` 时使用进程内内存存储，重启后数据会丢失，生产环境请务必使用 Upstash Redis。
+> 💡 **数据库提示**：请在部署前准备好 MySQL 实例并配置 `MYSQL_URL`（或 `MYSQL_HOST` 等字段）。应用首次启动时会自动创建所需数据表，无需手动执行 SQL。
 
 ### 国际化指南
 
@@ -138,6 +144,19 @@ pnpm lint        # 代码检查
 2. 服务端 `lib/i18n.ts` 会通过 `fs` 自动扫描并注册新语言，前端 `I18nProvider` 也会动态合并 `/api/locales` 返回的数据。
 
 **使用方法**：在组件中通过 `useI18n()` 获取 `t(path, params)` 函数，采用点号路径查找并支持 `{var}` 插值，例如 `t('dashboard.title')`、`t('subs.selectedCount', { count: 5 })`。
+
+### 通知模板
+
+邮件与 Telegram 通知的文案不再硬编码在代码中，而是从项目根目录的 `template/` 文件夹读取，支持多语言：
+
+- `template/mail_zh-CN.html` / `mail_en-US.html` / `mail_ja-JP.html` — Resend 邮件 HTML 模板（邮件主题取自模板内的 `<title>`）。
+- `template/telegram_zh-CN.md` / `telegram_en-US.md` / `telegram_ja-JP.md` — Telegram Markdown 模板。
+
+模板使用 `{{变量}}` 作为占位符，可用变量：`{{username}}`、`{{nodeCount}}`、`{{subUrl}}`、`{{clashUrl}}`、`{{v2rayUrl}}`。
+
+**新增一门语言的通知模板**：在 `template/` 下新增 `mail_<lang>.html` 与 `telegram_<lang>.md`（`<lang>` 需与 `locales/` 中的语言代码一致，如 `fr-FR`），并在订阅弹窗的「通知语言」下拉中选择该语言即可。
+
+> ⚠️ 未命中指定语言模板时，系统会依次回退到 `zh-CN` → `en-US` → `ja-JP`，最终回退到目录中任意可用模板。
 
 ---
 
@@ -163,14 +182,15 @@ pnpm lint        # 代码检查
   - Auto-negotiates output format from the client's User-Agent.
 - 📱 **QR code quick-scan**
   - Subscription modal generates dynamic QR codes and lets you switch client formats for mobile scan-and-import.
-- 📬 **Automatic & manual notification system**
-  - **Resend email**: sends polished HTML responsive card emails.
-  - **Telegram bot**: sends Markdown-format dedicated subscription cards.
+- 📬 **Automatic & manual notification system (templated + multilingual)**
+  - **Resend email**: renders the HTML responsive card email from `template/mail_<lang>.html`.
+  - **Telegram bot**: renders the Markdown subscription card from `template/telegram_<lang>.md`.
+  - Each subscription has its own **notification language** (defaults to the current UI language); templates are matched by language and rendered with `{{variable}}` placeholders.
 - 🌍 **Internationalization (i18n)**
   - Simplified Chinese (default), English, and Japanese — see [Internationalization Guide](#internationalization-guide).
 - 🛡️ **Production-grade security**
   - No default weak password — a strong 16-char random password is auto-generated and logged at startup if unset.
-  - Sensitive credentials (Redis, Token, API Key) stay strictly server-side, never exposed to the frontend.
+  - Sensitive credentials (MySQL, Token, API Key) stay strictly server-side, never exposed to the frontend.
   - Strict JWT cookie auth with middleware route interception.
 
 ### Tech Stack
@@ -179,7 +199,7 @@ pnpm lint        # 代码检查
 | --- | --- |
 | Framework | Next.js 14 (App Router) + React 18 + TypeScript 5.6 |
 | Styling | Tailwind CSS 3 + clsx + tailwind-merge + lucide-react |
-| Data store | Upstash Redis (falls back to in-memory when Redis env vars absent) |
+| Data store | MySQL (mysql2 connection pool, auto-creates tables on startup) |
 | Auth | JWT cookie sessions + middleware route interception |
 | Notifications | Resend (Email) + Telegram Bot |
 
@@ -198,9 +218,14 @@ AUTH_SECRET=your_secret_jwt_key
 # Master salt for 16-char subscription token generation (strongly recommended to customize)
 SUB_TOKEN=your_custom_secret_salt
 
-# Upstash Redis credentials (falls back to local in-memory mode when unset)
-UPSTASH_REDIS_REST_URL=https://your-database.upstash.io
-UPSTASH_REDIS_REST_TOKEN=Axxxxxx...
+# MySQL connection string (recommended; tables are created automatically on startup)
+MYSQL_URL=mysql://user:password@localhost:3306/subprism
+# Or use the discrete fields below (effective when MYSQL_URL is empty)
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=your_password
+MYSQL_DATABASE=subprism
 
 # Email notification service (Resend)
 RESEND_API_KEY=re_xxxxxxxxxxxx
@@ -210,7 +235,7 @@ RESEND_FROM_EMAIL=SubPrism <notifications@resend.dev>
 TELEGRAM_BOT_TOKEN=123456789:ABCDefgh-xxxxxxxx
 
 # Public application URL (used to generate subscription links)
-NEXT_PUBLIC_APP_URL=https://your-domain.vercel.app
+APP_URL=https://your-domain.vercel.app
 ```
 
 ### Deployment
@@ -237,7 +262,7 @@ pnpm lint        # lint check
 3. Click **Deploy**.
 4. After deploying, visit `/admin` and log in with your admin credentials.
 
-> 💡 **Serverless note**: Without `UPSTASH_REDIS_REST_URL`, data is stored in process memory and lost on restart — always use Upstash Redis in production.
+> 💡 **Database note**: Provision a MySQL instance and set `MYSQL_URL` (or the discrete `MYSQL_HOST` fields) before deploying. Required tables are created automatically on first startup — no manual SQL needed.
 
 ### Internationalization Guide
 
@@ -261,6 +286,19 @@ The project uses a custom lightweight i18n approach (not next-intl). Translation
 2. The server-side `lib/i18n.ts` scans and registers the new language automatically, and the client `I18nProvider` dynamically merges the data returned from `/api/locales`.
 
 **Usage**: In components, call `useI18n()` to get the `t(path, params)` function, which uses dotted-path lookup with `{var}` interpolation, e.g. `t('dashboard.title')`, `t('subs.selectedCount', { count: 5 })`.
+
+### Notification Templates
+
+Email and Telegram notification content is no longer hardcoded — it is loaded from the `template/` folder at the project root, with multilingual support:
+
+- `template/mail_zh-CN.html` / `mail_en-US.html` / `mail_ja-JP.html` — Resend email HTML templates (the email subject is taken from the template's `<title>`).
+- `template/telegram_zh-CN.md` / `telegram_en-US.md` / `telegram_ja-JP.md` — Telegram Markdown templates.
+
+Templates use `{{variable}}` placeholders. Available variables: `{{username}}`, `{{nodeCount}}`, `{{subUrl}}`, `{{clashUrl}}`, `{{v2rayUrl}}`.
+
+**Adding templates for a new language**: create `mail_<lang>.html` and `telegram_<lang>.md` in `template/` (use the same `<lang>` code as in `locales/`, e.g. `fr-FR`), then pick that language in the subscription modal's "Notification Language" selector.
+
+> ⚠️ If the requested language template is missing, the system falls back to `zh-CN` → `en-US` → `ja-JP`, and finally to any available template in the folder.
 
 ---
 

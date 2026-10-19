@@ -12,10 +12,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { type, target } = body; // type: 'email' | 'telegram'
+    const { type, target, language } = body; // type: 'email' | 'telegram'
 
     const origin =
-      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.APP_URL ||
       `${req.nextUrl.protocol}//${req.nextUrl.host}`;
 
     const subUrl = `${origin}/sub/test_demo_token`;
@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
         clashUrl,
         v2rayUrl,
         nodeCount: 5,
+        language,
       });
       return NextResponse.json(res);
     }
@@ -48,6 +49,7 @@ export async function POST(req: NextRequest) {
         clashUrl,
         v2rayUrl,
         nodeCount: 5,
+        language,
       });
       return NextResponse.json(res);
     }

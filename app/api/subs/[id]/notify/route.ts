@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSubscriptionById, getAllNodes } from '@/lib/redis';
+import { getSubscriptionById, getAllNodes } from '@/lib/db';
 import { getAdminSessionFromRequest } from '@/lib/auth';
 import { dispatchSubscriptionNotification } from '@/lib/notifications';
 
@@ -34,7 +34,7 @@ export async function POST(
       : sub.nodeIds.length;
 
   const origin =
-    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.APP_URL ||
     `${req.nextUrl.protocol}//${req.nextUrl.host}`;
 
   const result = await dispatchSubscriptionNotification(sub, nodeCount, origin);

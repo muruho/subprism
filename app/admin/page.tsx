@@ -154,15 +154,15 @@ export default function AdminDashboardPage() {
             <div className="flex items-center justify-between text-slate-600">
               <span className="flex items-center gap-1.5">
                 <Database className="w-3.5 h-3.5 text-slate-400" />
-                {t('dashboard.redis')}:
+                {t('dashboard.database')}:
               </span>
-              {stats?.redisConnected ? (
+              {stats?.dbConnected ? (
                 <span className="text-emerald-600 font-medium flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> {t('dashboard.redisConnected')}
+                  <CheckCircle2 className="w-3.5 h-3.5" /> {t('dashboard.dbConnected')}
                 </span>
               ) : (
                 <span className="text-amber-600 font-medium flex items-center gap-1">
-                  {t('dashboard.redisMemory')}
+                  {t('dashboard.dbDisconnected')}
                 </span>
               )}
             </div>

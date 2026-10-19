@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Server,
-  Plus,
   FileText,
   Trash2,
   Edit2,
@@ -15,7 +14,7 @@ import {
   Sliders,
 } from 'lucide-react';
 import { ProxyNode, ProxyType } from '@/lib/types';
-import { nodeToRawUrl } from '@/lib/parser';
+import { nodeToRawUrl, safeBase64Decode } from '@/lib/parser';
 import { Switch } from '@/components/Switch';
 import { useI18n } from '@/components/I18nProvider';
 
@@ -37,11 +36,6 @@ export default function NodesPage() {
   const [importPreview, setImportPreview] = useState<ProxyNode[]>([]);
   const [importLoading, setImportLoading] = useState(false);
   const [importError, setImportError] = useState('');
-
-  // 快速示例填充
-  const exampleLink = `socks://amRKSTV5ODNFUHdJOndvek5hMkRCb2dvQQ@198.65.112.64:6935#US-Socks5-Premium
-ss://YWVzLTI1Ni1nY206cGFzc3dvcmRAMTk4LjY1LjExMi42NDo4Mzg4#HK-Shadowsocks-01
-vmess://eyJhZGQiOiIxOTguNjUuMTEyLjY0IiwicG9ydCI6IjQ0MyIsImlkIjoiZjhhY2ZkNzctOWMyNy00NjFmLWE3Y2YtZDRjMGxiNTU1NmI4IiwiYWlkIjoiMCIsInNjeSI6ImF1dG8iLCJuZXQiOiJ3cyIsInRscyI6InRscyIsInBzIjoiSlAtVk1lc3MtV1MifQ==`;
 
   useEffect(() => {
     fetchNodes();
@@ -102,6 +96,18 @@ vmess://eyJhZGQiOiIxOTguNjUuMTEyLjY0IiwicG9ydCI6IjQ0MyIsImlkIjoiZjhhY2ZkNzctOWMy
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  // Base64 解码输入内容
+  const handleBase64Decode = () => {
+    setImportError('');
+    const decoded = safeBase64Decode(importText);
+    if (!decoded.trim()) {
+      setImportError(t('nodes.base64DecodeError'));
+      return;
+    }
+    setImportText(decoded);
+    setImportPreview([]);
+  };
+
   // 批量导入解析预览
   const handlePreviewImport = async () => {
     setImportError('');
@@ -150,18 +156,14 @@ vmess://eyJhZGQiOiIxOTguNjUuMTEyLjY0IiwicG9ydCI6IjQ0MyIsImlkIjoiZjhhY2ZkNzctOWMy
     }
   };
 
-  // 单节点保存 (新建/编辑)
+  // 单节点保存 (编辑)
   const handleSaveSingleNode = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingNode) return;
+    if (!editingNode || !editingNode.id) return;
 
     try {
-      const isEdit = !!editingNode.id;
-      const url = isEdit ? `/api/nodes/${editingNode.id}` : '/api/nodes';
-      const method = isEdit ? 'PUT' : 'POST';
-
-      const res = await fetch(url, {
-        method,
+      const res = await fetch(`/api/nodes/${editingNode.id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editingNode),
       });
@@ -214,22 +216,6 @@ vmess://eyJhZGQiOiIxOTguNjUuMTEyLjY0IiwicG9ydCI6IjQ0MyIsImlkIjoiZjhhY2ZkNzctOWMy
             <FileText className="w-4 h-4" />
             {t('nodes.batchImportBtn')}
           </button>
-          <button
-            onClick={() => {
-              setEditingNode({
-                type: 'socks5',
-                name: '',
-                server: '',
-                port: 1080,
-                status: 'active',
-              });
-              setIsEditModalOpen(true);
-            }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 shadow-sm transition-colors cursor-pointer"
-          >
-            <Plus className="w-4 h-4 text-slate-600" />
-            {t('nodes.addNodeBtn')}
-          </button>
         </div>
       </div>
 
@@ -259,11 +245,11 @@ vmess://eyJhZGQiOiIxOTguNjUuMTEyLjY0IiwicG9ydCI6IjQ0MyIsImlkIjoiZjhhY2ZkNzctOWMy
             className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">{t('nodes.allProtocols')}</option>
-            <option value="socks5">SOCKS5 / SOCKS</option>
-            <option value="ss">Shadowsocks</option>
-            <option value="vmess">VMess</option>
             <option value="vless">VLESS</option>
+            <option value="vmess">VMess</option>
             <option value="trojan">Trojan</option>
+            <option value="ss">Shadowsocks</option>
+            <option value="socks5">SOCKS5 / SOCKS</option>
             <option value="http">HTTP</option>
           </select>
 
@@ -425,13 +411,6 @@ vmess://eyJhZGQiOiIxOTguNjUuMTEyLjY0IiwicG9ydCI6IjQ0MyIsImlkIjoiZjhhY2ZkNzctOWMy
                   <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
                     {t('nodes.pasteLabel')}
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => setImportText(exampleLink)}
-                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    {t('nodes.fillExample')}
-                  </button>
                 </div>
                 <textarea
                   rows={6}
@@ -488,6 +467,14 @@ vmess://eyJhZGQiOiIxOTguNjUuMTEyLjY0IiwicG9ydCI6IjQ0MyIsImlkIjoiZjhhY2ZkNzctOWMy
               </button>
               <button
                 type="button"
+                onClick={handleBase64Decode}
+                disabled={importLoading || !importText.trim()}
+                className="px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
+              >
+                {t('nodes.base64DecodeBtn')}
+              </button>
+              <button
+                type="button"
                 onClick={handlePreviewImport}
                 disabled={importLoading}
                 className="px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-sm font-medium rounded-xl transition-colors"
@@ -507,13 +494,13 @@ vmess://eyJhZGQiOiIxOTguNjUuMTEyLjY0IiwicG9ydCI6IjQ0MyIsImlkIjoiZjhhY2ZkNzctOWMy
         </div>
       )}
 
-      {/* Edit / Add Single Node Modal */}
+      {/* Edit Single Node Modal */}
       {isEditModalOpen && editingNode && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
               <h3 className="text-lg font-bold text-slate-900">
-                {editingNode.id ? t('nodes.editModalTitleEdit') : t('nodes.editModalTitleAdd')}
+                {t('nodes.editModalTitleEdit')}
               </h3>
               <button
                 onClick={() => setIsEditModalOpen(false)}
@@ -536,11 +523,11 @@ vmess://eyJhZGQiOiIxOTguNjUuMTEyLjY0IiwicG9ydCI6IjQ0MyIsImlkIjoiZjhhY2ZkNzctOWMy
                     }
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="socks5">SOCKS5</option>
-                    <option value="ss">Shadowsocks</option>
-                    <option value="vmess">VMess</option>
                     <option value="vless">VLESS</option>
+                    <option value="vmess">VMess</option>
                     <option value="trojan">Trojan</option>
+                    <option value="ss">Shadowsocks</option>
+                    <option value="socks5">SOCKS5</option>
                     <option value="http">HTTP</option>
                   </select>
                 </div>

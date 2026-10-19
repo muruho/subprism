@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>[SubPrism] 您的专属代理订阅配置 ({{username}})</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, 'Microsoft YaHei', sans-serif; background-color: #f4f6f8; margin: 0; padding: 20px; color: #333; }
+    .card { background-color: #ffffff; border-radius: 12px; max-width: 600px; margin: 20px auto; padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+    .header { text-align: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; }
+    .title { color: #111827; font-size: 24px; font-weight: 700; margin: 0; }
+    .badge { display: inline-block; background: #e0e7ff; color: #4338ca; padding: 4px 12px; border-radius: 9999px; font-size: 13px; font-weight: 600; margin-top: 8px; }
+    .content { margin-top: 24px; line-height: 1.6; }
+    .link-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; margin-bottom: 16px; word-break: break-all; }
+    .link-title { font-weight: 600; font-size: 14px; color: #374151; margin-bottom: 4px; }
+    .link-url { font-family: monospace; font-size: 13px; color: #2563eb; text-decoration: none; }
+    .notice { background: #fff7ed; border-left: 4px solid #f97316; border-radius: 6px; padding: 12px 14px; margin: 20px 0; font-size: 14px; }
+    .notice strong { color: #c2410c; }
+    .section-title { font-size: 18px; color: #1d4ed8; font-weight: 700; margin: 32px 0 12px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+    .steps { padding-left: 22px; margin: 0; font-size: 14px; }
+    .steps li { margin-bottom: 6px; }
+    .tip { background: #eff6ff; border-radius: 6px; padding: 12px 14px; margin: 14px 0; font-size: 14px; }
+    .faq p { margin: 8px 0; font-size: 14px; }
+    .footer { text-align: center; margin-top: 32px; font-size: 12px; color: #9ca3af; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1 class="title">专属订阅链接已更新</h1>
+      <div class="badge">用户: {{username}} | 可用节点: {{nodeCount}} 个</div>
+    </div>
+    <div class="content">
+      <p>您好 <strong>{{username}}</strong>,您的专属代理订阅链接已准备完毕,请根据您使用的客户端选择下方对应的订阅格式:</p>
+
+      <div class="link-box">
+        <div class="link-title">🔗 通用订阅 (Universal / V2RayN / Shadowrocket)</div>
+        <a class="link-url" href="{{subUrl}}">{{subUrl}}</a>
+      </div>
+
+      <div class="link-box">
+        <div class="link-title">⚡ Clash / Meta 订阅</div>
+        <a class="link-url" href="{{clashUrl}}">{{clashUrl}}</a>
+      </div>
+
+      <div class="link-box">
+        <div class="link-title">🛡️ V2Ray 格式订阅</div>
+        <a class="link-url" href="{{v2rayUrl}}">{{v2rayUrl}}</a>
+      </div>
+
+      <div class="notice">
+        <strong>重要提示:</strong>订阅链接通常包含账号及节点信息,请勿公开转发或发布到群聊、论坛等地方。
+      </div>
+
+      <h2 class="section-title">一、v2rayN 导入订阅链接</h2>
+      <ol class="steps">
+        <li>打开电脑上的 <strong>v2rayN</strong>。</li>
+        <li>点击顶部菜单中的 <strong>订阅分组</strong>。</li>
+        <li>选择 <strong>订阅分组设置</strong>。</li>
+        <li>点击窗口左上角的 <strong>添加</strong>。</li>
+        <li>在“别名”或“备注”中填写一个名称,例如:<strong>我的订阅</strong>。</li>
+        <li>在“可选地址(URL)”栏粘贴上方的<strong>通用订阅</strong>链接。</li>
+        <li>在用户代理(User-Agent) 填入 Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)</li>
+        <li>点击 <strong>确定</strong> 保存设置。</li>
+        <li>返回主界面,点击 <strong>订阅分组</strong>。</li>
+        <li>选择 <strong>更新全部订阅</strong>,等待节点加载完成。</li>
+        <li>在节点列表中选择需要使用的节点,并将其设置为活动服务器。</li>
+      </ol>
+      <div class="tip">
+        <strong>使用提示:</strong>选择节点后,可在右下角托盘区域右键点击 v2rayN 图标,选择 <strong>自动配置系统代理</strong>。
+      </div>
+
+      <h2 class="section-title">二、Shadowrocket(小火箭)导入订阅链接</h2>
+      <ol class="steps">
+        <li>打开 iPhone 或 iPad 上的 <strong>Shadowrocket(小火箭)</strong>。</li>
+        <li>点击首页右上角的 <strong>+</strong> 按钮。</li>
+        <li>点击“类型”,选择 <strong>Subscribe</strong>。</li>
+        <li>在“URL”栏粘贴上方的<strong>通用订阅</strong>链接。</li>
+        <li>在“备注”栏填写一个容易识别的名称,例如:<strong>我的订阅</strong>。</li>
+        <li>在用户代理(User-Agent) 填入 Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)</li>
+        <li>点击右上角的 <strong>完成</strong> 保存。</li>
+        <li>返回首页,等待节点自动加载。</li>
+        <li>选择一个节点,点击右上角开关启动连接。</li>
+        <li>如果系统提示添加 VPN 配置,请点击允许,并按照系统提示完成验证。</li>
+      </ol>
+      <div class="tip">
+        <strong>建议:</strong>连接前可以先点击“连通性测试”,选择测试正常且延迟较低的节点。“全局路由”一般可先选择 <strong>配置</strong>。
+      </div>
+
+      <h2 class="section-title">三、Clash / Meta 导入订阅链接</h2>
+      <ol class="steps">
+        <li>打开电脑上的 <strong>Clash Verge</strong>(或其他 Clash / Meta 客户端)。</li>
+        <li>进入左侧菜单的 <strong>订阅</strong> 页面。</li>
+        <li>将上方的 <strong>Clash / Meta 订阅</strong> 链接粘贴到输入框中。</li>
+        <li>在用户代理(User-Agent) 填入 Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)</li>
+        <li>点击 <strong>导入</strong>,等待配置下载完成。</li>
+        <li>在订阅列表中选中刚导入的配置。</li>
+        <li>进入 <strong>代理</strong> 页面,选择一个节点,并开启 <strong>系统代理</strong>。</li>
+      </ol>
+      <div class="tip">
+        <strong>建议:</strong>如需接管所有应用的流量,可开启 <strong>Tun 模式</strong>;订阅更新可在订阅列表中点击更新按钮手动完成。
+      </div>
+
+      <h2 class="section-title">四、常见问题</h2>
+      <div class="faq">
+        <p><strong>1. 导入后没有节点怎么办?</strong><br>
+        请检查订阅链接是否复制完整,确认链接没有多余空格,并尝试手动更新订阅。</p>
+
+        <p><strong>2. 节点显示 timeout 怎么办?</strong><br>
+        可以先更新订阅,再更换其他节点测试,同时确认当前网络正常。如果仍然无法连接,可以联系管理员更新订阅或处理无效节点。</p>
+
+        <p><strong>3. 订阅需要更新吗?</strong><br>
+        节点信息可能会发生变化,建议定期更新订阅。小火箭可以开启“打开时更新”,v2rayN 可以在“订阅分组”中手动更新。</p>
+
+        <p>如果操作过程中遇到问题,请把具体提示截图发回来,方便进一步排查。</p>
+      </div>
+
+    </div>
+    <div class="footer">
+      由 SubPrism 订阅系统自动发送 · 感谢您的使用
+    </div>
+  </div>
+</body>
+</html>

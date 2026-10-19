@@ -18,7 +18,7 @@ import { SystemStats } from '@/lib/types';
 import { useI18n } from '@/components/I18nProvider';
 
 export default function SettingsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [stats, setStats] = useState<SystemStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -58,7 +58,7 @@ export default function SettingsPage() {
       const res = await fetch('/api/test-notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'email', target: testEmail }),
+        body: JSON.stringify({ type: 'email', target: testEmail, language: locale }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -83,7 +83,7 @@ export default function SettingsPage() {
       const res = await fetch('/api/test-notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'telegram', target: testTgChatId }),
+        body: JSON.stringify({ type: 'telegram', target: testTgChatId, language: locale }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -170,24 +170,24 @@ export default function SettingsPage() {
                 </span>
               </div>
 
-              {/* Upstash Redis */}
+              {/* MySQL Database */}
               <div className="py-3.5 flex items-center justify-between">
                 <div>
                   <div className="font-semibold text-slate-800 flex items-center gap-2">
                     <Database className="w-4 h-4 text-slate-400" />
-                    {t('settings.redisDb')}
+                    {t('settings.database')}
                   </div>
                   <div className="text-xs text-slate-400 mt-0.5 font-mono">
-                    UPSTASH_REDIS_REST_URL & UPSTASH_REDIS_REST_TOKEN
+                    MYSQL_URL / MYSQL_HOST + MYSQL_USER + MYSQL_DATABASE
                   </div>
                 </div>
-                {stats?.redisConnected ? (
+                {stats?.dbConnected ? (
                   <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> {t('settings.redisNormal')}
+                    <CheckCircle2 className="w-3.5 h-3.5" /> {t('settings.dbNormal')}
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">
-                    <AlertTriangle className="w-3.5 h-3.5" /> {t('settings.redisDegraded')}
+                    <AlertTriangle className="w-3.5 h-3.5" /> {t('settings.dbDegraded')}
                   </span>
                 )}
               </div>
@@ -251,10 +251,11 @@ export default function SettingsPage() {
               <div>ADMIN_NAME=admin</div>
               <div>ADMIN_PASSWORD=your_secure_password</div>
               <div>SUB_TOKEN=your_custom_secret_salt</div>
-              <div>UPSTASH_REDIS_REST_URL=https://xxxx.upstash.io</div>
-              <div>UPSTASH_REDIS_REST_TOKEN=Axxx...</div>
+              <div>MYSQL_URL=mysql://user:pass@host:3306/subprism</div>
               <div>RESEND_API_KEY=re_xxx...</div>
+              <div>RESEND_FROM_EMAIL=SubPrism &lt;notifications@resend.dev&gt;</div>
               <div>TELEGRAM_BOT_TOKEN=123456:ABC-xxx...</div>
+              <div>APP_URL=https://your-domain.vercel.app</div>
             </pre>
           </div>
         </div>
