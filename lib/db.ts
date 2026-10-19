@@ -1,15 +1,24 @@
-import mysql, {
-  Pool,
-  PoolOptions,
-  RowDataPacket,
-  ResultSetHeader,
-} from 'mysql2/promise';
+import type { Pool, PoolOptions, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { ProxyNode, Subscription, SystemStats } from './types';
+
+type MysqlModule = typeof import('mysql2/promise');
 
 const globalDb = globalThis as unknown as {
   __subMgrPool?: Pool;
   __subMgrSchemaReady?: Promise<void>;
+  __subMgrMysql?: Promise<MysqlModule>;
 };
+
+/**
+ * 延迟加载 mysql2：避免在应用启动（instrumentation / 路由模块求值）时
+ * 立即引入依赖 Node net/tls/dns 的驱动，导致边缘运行时启动即崩溃。
+ */
+function loadMysql(): Promise<MysqlModule> {
+  if (!globalDb.__subMgrMysql) {
+    globalDb.__subMgrMysql = import('mysql2/promise');
+  }
+  return globalDb.__subMgrMysql;
+}
 
 function buildPoolOptions(): PoolOptions | null {
   const host = process.env.MYSQL_HOST;
@@ -36,27 +45,27 @@ function buildPoolOptions(): PoolOptions | null {
   };
 }
 
-export function getPool(): Pool | null {
+export async function getPool(): Promise<Pool | null> {
   if (globalDb.__subMgrPool) return globalDb.__subMgrPool;
 
   const url = process.env.MYSQL_URL || process.env.DATABASE_URL;
-  if (url) {
-    globalDb.__subMgrPool = mysql.createPool({
-      uri: url,
-      waitForConnections: true,
-      connectionLimit: 5,
-      maxIdle: 5,
-      idleTimeout: 60000,
-      queueLimit: 0,
-      charset: 'utf8mb4',
-    });
-    return globalDb.__subMgrPool;
-  }
-
   const options = buildPoolOptions();
-  if (!options) return null;
+  if (!url && !options) return null;
 
-  globalDb.__subMgrPool = mysql.createPool(options);
+  const mysql = await loadMysql();
+
+  globalDb.__subMgrPool = url
+    ? mysql.createPool({
+        uri: url,
+        waitForConnections: true,
+        connectionLimit: 5,
+        maxIdle: 5,
+        idleTimeout: 60000,
+        queueLimit: 0,
+        charset: 'utf8mb4',
+      })
+    : mysql.createPool(options as PoolOptions);
+
   return globalDb.__subMgrPool;
 }
 
@@ -119,7 +128,7 @@ const SCHEMA_STATEMENTS = [
 ];
 
 export async function ensureSchema(): Promise<void> {
-  const pool = getPool();
+  const pool = await getPool();
   if (!pool) {
     throw new Error('MySQL 未配置：请设置 MYSQL_URL 或 MYSQL_HOST/MYSQL_USER/MYSQL_DATABASE');
   }
@@ -139,7 +148,7 @@ export async function ensureSchema(): Promise<void> {
 }
 
 async function withPool<T>(fn: (pool: Pool) => Promise<T>): Promise<T> {
-  const pool = getPool();
+  const pool = await getPool();
   if (!pool) {
     throw new Error('MySQL 未配置：请设置 MYSQL_URL 或 MYSQL_HOST/MYSQL_USER/MYSQL_DATABASE');
   }

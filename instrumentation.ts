@@ -3,18 +3,16 @@ export async function register() {
     const { getAdminCredentials } = await import('@/lib/auth');
     getAdminCredentials();
 
-    try {
-      const { ensureSchema, isDbConfigured } = await import('@/lib/db');
-      if (isDbConfigured()) {
-        await ensureSchema();
-        console.log('✅ MySQL 数据表结构已就绪');
-      } else {
-        console.warn(
-          '⚠️  未配置 MySQL：请设置 MYSQL_URL 或 MYSQL_HOST/MYSQL_USER/MYSQL_DATABASE'
-        );
-      }
-    } catch (e) {
-      console.error('❌ MySQL 初始化失败:', e);
+    const dbConfigured = !!(
+      process.env.MYSQL_URL ||
+      process.env.DATABASE_URL ||
+      (process.env.MYSQL_HOST && process.env.MYSQL_USER && process.env.MYSQL_DATABASE)
+    );
+
+    if (!dbConfigured) {
+      console.warn(
+        '⚠️  未配置 MySQL：请设置 MYSQL_URL 或 MYSQL_HOST/MYSQL_USER/MYSQL_DATABASE（数据表将在首次访问时自动创建）'
+      );
     }
   }
 }

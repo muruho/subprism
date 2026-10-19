@@ -22,6 +22,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
 
 # local env files
 .env
@@ -43,3 +44,5 @@ next-env.d.ts
 .vscode/
 .idea/
 *.swp
+# next-bundle build output
+.next-bundle/
